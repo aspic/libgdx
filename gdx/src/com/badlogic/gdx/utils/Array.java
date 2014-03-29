@@ -300,13 +300,14 @@ public class Array<T> implements Iterable<T> {
 	}
 
 	/** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items have
-	 * been removed, or if it is known that more items will not be added. */
-	public void shrink () {
-		if (items.length == size) return;
-		resize(size);
+	 * been removed, or if it is known that more items will not be added.
+	 * @return {@link #items} */
+	public T[] shrink () {
+		if (items.length != size) resize(size);
+		return items;
 	}
 
-	/** Increases the size of the backing array to acommodate the specified number of additional items. Useful before adding many
+	/** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
 	 * items to avoid multiple backing array resizes.
 	 * @return {@link #items} */
 	public T[] ensureCapacity (int additionalCapacity) {
@@ -331,7 +332,7 @@ public class Array<T> implements Iterable<T> {
 	}
 
 	/** Sorts the array. This method is not thread safe (uses {@link Sort#instance()}). */
-	public void sort (Comparator<T> comparator) {
+	public void sort (Comparator<? super T> comparator) {
 		Sort.instance().sort(items, comparator, 0, size);
 	}
 
@@ -476,6 +477,11 @@ public class Array<T> implements Iterable<T> {
 	/** @see #Array(boolean, int, Class) */
 	static public <T> Array<T> of (boolean ordered, int capacity, Class<T> arrayType) {
 		return new Array<T>(ordered, capacity, arrayType);
+	}
+
+	/** @see #Array(Object[]) */
+	static public <T> Array<T> with (T... array) {
+		return new Array(array);
 	}
 
 	static public class ArrayIterator<T> implements Iterator<T>, Iterable<T> {

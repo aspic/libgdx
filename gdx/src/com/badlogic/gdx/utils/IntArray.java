@@ -114,12 +114,12 @@ public class IntArray {
 		if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
 		items[index] += value;
 	}
-	
+
 	public void mul (int index, int value) {
 		if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
 		items[index] *= value;
 	}
-	
+
 	public void insert (int index, int value) {
 		if (index > size) throw new IndexOutOfBoundsException("index can't be > size: " + index + " > " + size);
 		int[] items = this.items;
@@ -227,13 +227,14 @@ public class IntArray {
 	}
 
 	/** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items have
-	 * been removed, or if it is known that more items will not be added. */
-	public void shrink () {
-		if (items.length == size) return;
-		resize(size);
+	 * been removed, or if it is known that more items will not be added.
+	 * @return {@link #items} */
+	public int[] shrink () {
+		if (items.length != size) resize(size);
+		return items;
 	}
 
-	/** Increases the size of the backing array to acommodate the specified number of additional items. Useful before adding many
+	/** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
 	 * items to avoid multiple backing array resizes.
 	 * @return {@link #items} */
 	public int[] ensureCapacity (int additionalCapacity) {
@@ -327,5 +328,10 @@ public class IntArray {
 			buffer.append(items[i]);
 		}
 		return buffer.toString();
+	}
+
+	/** @see #IntArray(int[]) */
+	static public IntArray with (int... array) {
+		return new IntArray(array);
 	}
 }

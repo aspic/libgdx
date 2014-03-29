@@ -18,11 +18,11 @@ package com.badlogic.gdx.tests;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer10;
+import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.math.BSpline;
 import com.badlogic.gdx.math.Bezier;
 import com.badlogic.gdx.math.CatmullRomSpline;
@@ -38,7 +38,7 @@ public class PathTest extends GdxTest {
 	float ZIGZAG_SCALE;
 	
 	SpriteBatch spriteBatch;
-	ImmediateModeRenderer10 renderer;
+	ImmediateModeRenderer20 renderer;
 	Sprite obj;
 	Array<Path<Vector2>> paths = new Array<Path<Vector2>>();
 	int currentPath = 0;
@@ -48,15 +48,10 @@ public class PathTest extends GdxTest {
 	float zspeed = 1.0f;
 	float wait = 0f;
 	boolean zigzag = false;
-
-	@Override
-	public boolean needsGL20 () {
-		return false;
-	}
 	
 	@Override
 	public void create () {
-		renderer = new ImmediateModeRenderer10();
+		renderer = new ImmediateModeRenderer20(false, false, 0);
 		spriteBatch = new SpriteBatch();
 		obj = new Sprite(new Texture(Gdx.files.internal("data/badlogicsmall.jpg")));
 		ZIGZAG_SCALE = Gdx.graphics.getDensity() * 96; //96DP
@@ -83,9 +78,9 @@ public class PathTest extends GdxTest {
 	final Vector2 tmpV2 = new Vector2();
 	@Override
 	public void render () {
-		GL10 gl = Gdx.graphics.getGL10();
+		GL20 gl = Gdx.graphics.getGL20();
 		gl.glClearColor(0.7f, 0.7f, 0.7f, 1);
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
 		if (wait > 0)
 			wait -= Gdx.graphics.getDeltaTime();
@@ -116,9 +111,7 @@ public class PathTest extends GdxTest {
 			
 		}
 			
-		spriteBatch.begin();
-		
-		renderer.begin(GL10.GL_LINE_STRIP);
+		renderer.begin(spriteBatch.getProjectionMatrix(), GL20.GL_LINE_STRIP);
 		float val = 0f;
 		while (val <= 1f) {
 			renderer.color(0f, 0f, 0f, 1f);
@@ -127,7 +120,8 @@ public class PathTest extends GdxTest {
 			val += SAMPLE_POINT_DISTANCE;
 		}
 		renderer.end();
-		
+
+		spriteBatch.begin();
 		obj.draw(spriteBatch);
 		spriteBatch.end();
 	}

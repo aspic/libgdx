@@ -501,7 +501,7 @@ public class IntMap<V> {
 		return notFound;
 	}
 
-	/** Increases the size of the backing array to acommodate the specified number of additional items. Useful before adding many
+	/** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
 	 * items to avoid multiple backing array resizes. */
 	public void ensureCapacity (int additionalCapacity) {
 		int sizeNeeded = size + additionalCapacity;
@@ -686,6 +686,8 @@ public class IntMap<V> {
 				throw new IllegalStateException("next must be called before remove.");
 			} else if (currentIndex >= map.capacity) {
 				map.removeStashIndex(currentIndex);
+				nextIndex = currentIndex - 1;
+				findNextIndex();
 			} else {
 				map.keyTable[currentIndex] = EMPTY;
 				map.valueTable[currentIndex] = null;

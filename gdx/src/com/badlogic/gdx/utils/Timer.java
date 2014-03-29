@@ -30,12 +30,14 @@ public class Timer {
 
 	/** Timer instance for general application wide usage. Static methods on {@link Timer} make convenient use of this instance. */
 	static Timer instance = new Timer();
-	static public Timer instance() {
+
+	static public Timer instance () {
 		if (instance == null) {
 			instance = new Timer();
 		}
 		return instance;
 	}
+
 	private final Array<Task> tasks = new Array(false, 8);
 
 	public Timer () {
@@ -184,6 +186,11 @@ public class Timer {
 		/** Returns true if this task is scheduled to be executed in the future by a timer. */
 		public boolean isScheduled () {
 			return repeatCount != CANCELLED;
+		}
+
+		/** Returns the time when this task will be executed in milliseconds */
+		public long getExecuteTimeMillis () {
+			return executeTimeMillis;
 		}
 	}
 

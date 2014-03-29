@@ -43,7 +43,7 @@ public class Box2DDebugRenderer {
 
 	private final static Array<Body> bodies = new Array<Body>();
 	private final static Array<Joint> joints = new Array<Joint>();
-	
+
 	private boolean drawBodies;
 	private boolean drawJoints;
 	private boolean drawAABBs;
@@ -107,12 +107,10 @@ public class Box2DDebugRenderer {
 		}
 		renderer.end();
 		if (drawContacts) {
-			if (Gdx.gl10 != null) Gdx.gl10.glPointSize(3);
 			renderer.begin(ShapeType.Point);
 			for (Contact contact : world.getContactList())
 				drawContact(contact);
 			renderer.end();
-			if (Gdx.gl10 != null) Gdx.gl10.glPointSize(1);
 		}
 	}
 
@@ -120,7 +118,7 @@ public class Box2DDebugRenderer {
 		Transform transform = body.getTransform();
 		for (Fixture fixture : body.getFixtureList()) {
 			if (drawBodies) {
-					drawShape(fixture, transform, getColorByBody(body));
+				drawShape(fixture, transform, getColorByBody(body));
 				if (drawVelocities) {
 					Vector2 position = body.getPosition();
 					drawSegment(position, body.getLinearVelocity().add(position), VELOCITY_COLOR);
@@ -132,8 +130,8 @@ public class Box2DDebugRenderer {
 			}
 		}
 	}
-	
-	private Color getColorByBody (Body body) { 
+
+	private Color getColorByBody (Body body) {
 		if (body.isActive() == false)
 			return SHAPE_NOT_ACTIVE;
 		else if (body.getType() == BodyType.StaticBody)
@@ -264,7 +262,7 @@ public class Box2DDebugRenderer {
 			renderer.line(lv.x, lv.y, v.x, v.y);
 			lv.set(v);
 		}
-		if(closed) renderer.line(f.x, f.y, lv.x, lv.y);
+		if (closed) renderer.line(f.x, f.y, lv.x, lv.y);
 	}
 
 	private void drawJoint (Joint joint) {
@@ -348,7 +346,7 @@ public class Box2DDebugRenderer {
 	public void setDrawVelocities (boolean drawVelocities) {
 		this.drawVelocities = drawVelocities;
 	}
-	
+
 	public boolean isDrawContacts () {
 		return drawContacts;
 	}

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
+
 package com.badlogic.gdx.backends.android;
 
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.net.Uri;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Net.HttpRequest;
 import com.badlogic.gdx.net.NetJavaImpl;
 import com.badlogic.gdx.net.ServerSocket;
 import com.badlogic.gdx.net.ServerSocketHints;
@@ -34,10 +36,10 @@ public class AndroidNet implements Net {
 
 	// IMPORTANT: The Gdx.net classes are a currently duplicated for JGLFW/LWJGL + Android!
 	// If you make changes here, make changes in the other backend as well.
-	final AndroidApplication app;
+	final AndroidApplicationBase app;
 	NetJavaImpl netJavaImpl;
 
-	public AndroidNet (AndroidApplication activity) {
+	public AndroidNet (AndroidApplicationBase activity) {
 		app = activity;
 		netJavaImpl = new NetJavaImpl();
 	}
@@ -45,6 +47,11 @@ public class AndroidNet implements Net {
 	@Override
 	public void sendHttpRequest (HttpRequest httpRequest, final HttpResponseListener httpResponseListener) {
 		netJavaImpl.sendHttpRequest(httpRequest, httpResponseListener);
+	}
+
+	@Override
+	public void cancelHttpRequest (HttpRequest httpRequest) {
+		netJavaImpl.cancelHttpRequest(httpRequest);
 	}
 
 	@Override
@@ -59,7 +66,7 @@ public class AndroidNet implements Net {
 
 	@Override
 	public void openURI (String URI) {
-		if(app == null) {
+		if (app == null) {
 			Gdx.app.log("AndroidNet", "Can't open browser activity from livewallpaper");
 			return;
 		}

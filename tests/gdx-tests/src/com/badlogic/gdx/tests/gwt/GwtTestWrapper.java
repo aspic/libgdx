@@ -91,9 +91,9 @@ import com.badlogic.gdx.tests.SpriteCacheTest;
 import com.badlogic.gdx.tests.StageTest;
 import com.badlogic.gdx.tests.TableTest;
 import com.badlogic.gdx.tests.TextButtonTest;
-import com.badlogic.gdx.tests.TextButtonTestGL2;
 import com.badlogic.gdx.tests.TextureAtlasTest;
 import com.badlogic.gdx.tests.TiledMapAtlasAssetManagerTest;
+import com.badlogic.gdx.tests.TimeUtilsTest;
 import com.badlogic.gdx.tests.UITest;
 import com.badlogic.gdx.tests.VertexBufferObjectShaderTest;
 import com.badlogic.gdx.tests.YDownTest;
@@ -114,7 +114,7 @@ public class GwtTestWrapper extends GdxTest {
 		Gdx.app.setLogLevel(Application.LOG_DEBUG);
 		Gdx.app.log("GdxTestGwt", "Setting up for " + tests.length + " tests.");
 
-		ui = new Stage(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+		ui = new Stage();
 		skin = new Skin(Gdx.files.internal("data/uiskin.json"));
 		font = new BitmapFont(Gdx.files.internal("data/arial-15.fnt"), false);
 		container = new Table();
@@ -195,7 +195,7 @@ public class GwtTestWrapper extends GdxTest {
 	}
 
 	public void resize (int width, int height) {
-		ui.setViewport(width, height, false);
+		ui.getViewport().update(width, height, true);
 		container.setSize(width, height);
 		if (test != null) {
 			test.resize(width, height);
@@ -648,7 +648,7 @@ public class GwtTestWrapper extends GdxTest {
 			}
 		}, new Instancer() {
 			public GdxTest instance () {
-				return new TextButtonTestGL2();
+				return new TextButtonTest();
 			}
 		}, new Instancer() {
 			public GdxTest instance () {
@@ -678,10 +678,9 @@ public class GwtTestWrapper extends GdxTest {
 			public GdxTest instance () {
 				return new TiledMapAtlasAssetManagerTest();
 			}
+		}, new Instancer() {
+			public GdxTest instance () {
+				return new TimeUtilsTest();
+			}
 		}};
-
-	@Override
-	public boolean needsGL20 () {
-		return true;
-	}
 }

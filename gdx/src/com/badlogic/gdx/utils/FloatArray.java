@@ -16,9 +16,9 @@
 
 package com.badlogic.gdx.utils;
 
-import java.util.Arrays;
-
 import com.badlogic.gdx.math.MathUtils;
+
+import java.util.Arrays;
 
 /** A resizable, ordered or unordered float array. Avoids the boxing that occurs with ArrayList<Float>. If unordered, this class
  * avoids a memory copy when removing elements (the last element is moved to the removed element's position).
@@ -227,13 +227,14 @@ public class FloatArray {
 	}
 
 	/** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items have
-	 * been removed, or if it is known that more items will not be added. */
-	public void shrink () {
-		if (items.length == size) return;
-		resize(size);
+	 * been removed, or if it is known that more items will not be added. 
+	 * @return {@link #items} */
+	public float[] shrink () {
+		if (items.length != size) resize(size);
+		return items;
 	}
 
-	/** Increases the size of the backing array to acommodate the specified number of additional items. Useful before adding many
+	/** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
 	 * items to avoid multiple backing array resizes.
 	 * @return {@link #items} */
 	public float[] ensureCapacity (int additionalCapacity) {
@@ -342,5 +343,10 @@ public class FloatArray {
 			buffer.append(items[i]);
 		}
 		return buffer.toString();
+	}
+
+	/** @see #FloatArray(float[]) */
+	static public FloatArray with (float... array) {
+		return new FloatArray(array);
 	}
 }

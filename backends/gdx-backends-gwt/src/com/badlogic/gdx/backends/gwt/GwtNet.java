@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
+
 package com.badlogic.gdx.backends.gwt;
 
 import java.io.InputStream;
@@ -21,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
@@ -33,6 +32,7 @@ import com.badlogic.gdx.net.ServerSocketHints;
 import com.badlogic.gdx.net.Socket;
 import com.badlogic.gdx.net.SocketHints;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.ObjectMap;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.Request;
@@ -44,6 +44,9 @@ import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Window;
 
 public class GwtNet implements Net {
+
+	ObjectMap<HttpRequest, Request> requests;
+	ObjectMap<HttpRequest, HttpResponseListener> listeners;
 
 	private final class HttpClientResponse implements HttpResponse {
 
@@ -88,17 +91,22 @@ public class GwtNet implements Net {
 				}
 				headerValues.add(responseHeaders[i].getValue());
 			}
-			return headers;			
+			return headers;
 		}
-		
+
 		@Override
 		public String getHeader (String name) {
 			return response.getHeader(name);
 		}
 	}
 
+	public GwtNet () {
+		requests = new ObjectMap<HttpRequest, Request>();
+		listeners = new ObjectMap<HttpRequest, HttpResponseListener>();
+	}
+
 	@Override
-	public void sendHttpRequest (HttpRequest httpRequest, final HttpResponseListener httpResultListener) {
+	public void sendHttpRequest (final HttpRequest httpRequest, final HttpResponseListener httpResultListener) {
 		if (httpRequest.getUrl() == null) {
 			httpResultListener.failed(new GdxRuntimeException("can't process a HTTP request without URL set"));
 			return;
@@ -107,8 +115,17 @@ public class GwtNet implements Net {
 		final boolean is_get = (httpRequest.getMethod() == HttpMethods.GET);
 		final String value = httpRequest.getContent();
 
-		final RequestBuilder builder = is_get ? new RequestBuilder(RequestBuilder.GET, httpRequest.getUrl() + "?" + value)
-			: new RequestBuilder(RequestBuilder.POST, httpRequest.getUrl());
+		RequestBuilder builder;
+		
+		String url = httpRequest.getUrl();
+		if (is_get) {
+			if (value != null) {
+				url += "?" + value;
+			}
+			builder = new RequestBuilder(RequestBuilder.GET, url);
+		} else {
+			builder = new RequestBuilder(RequestBuilder.POST, url);
+		}
 
 		Map<String, String> content = httpRequest.getHeaders();
 		Set<String> keySet = content.keySet();
@@ -119,22 +136,42 @@ public class GwtNet implements Net {
 		builder.setTimeoutMillis(httpRequest.getTimeOut());
 
 		try {
-			builder.sendRequest(is_get ? null : value, new RequestCallback() {
+			Request request = builder.sendRequest(is_get ? null : value, new RequestCallback() {
 
 				@Override
-				public void onResponseReceived (Request request, Response response) {
-					httpResultListener.handleHttpResponse(new HttpClientResponse(response));
+				public void onResponseReceived (Request request, Response response) {					
+						httpResultListener.handleHttpResponse(new HttpClientResponse(response));
+						requests.remove(httpRequest);
+						listeners.remove(httpRequest);
 				}
 
 				@Override
 				public void onError (Request request, Throwable exception) {
-					httpResultListener.failed(exception);
+						httpResultListener.failed(exception);
+						requests.remove(httpRequest);
+						listeners.remove(httpRequest);
 				}
 			});
+			requests.put(httpRequest, request);
+			listeners.put(httpRequest, httpResultListener);
+
 		} catch (RequestException e) {
 			httpResultListener.failed(e);
 		}
 
+	}
+
+	@Override
+	public void cancelHttpRequest (HttpRequest httpRequest) {
+		HttpResponseListener httpResponseListener = listeners.get(httpRequest);
+		Request request = requests.get(httpRequest);
+
+		if (httpResponseListener != null && request != null) {
+			request.cancel();
+			httpResponseListener.cancelled();
+			requests.remove(httpRequest);
+			listeners.remove(httpRequest);
+		}
 	}
 
 	@Override

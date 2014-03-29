@@ -22,7 +22,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.ObjectMap;
-import com.badlogic.gdx.utils.SerializationException;
+import com.badlogic.gdx.utils.ObjectSet;
 
 import java.io.File;
 import java.io.FileReader;
@@ -48,8 +48,10 @@ public class TexturePackerFileProcessor extends FileProcessor {
 	public TexturePackerFileProcessor (Settings defaultSettings, String packFileName) {
 		this.defaultSettings = defaultSettings;
 
-		if (packFileName.indexOf('.') == -1 || packFileName.endsWith(".png") || packFileName.endsWith(".jpg"))
+		if (packFileName.indexOf('.') == -1 || packFileName.toLowerCase().endsWith(".png")
+			|| packFileName.toLowerCase().endsWith(".jpg")) {
 			packFileName += ".atlas";
+		}
 		this.packFileName = packFileName;
 
 		setFlattenOutput(true);
@@ -89,16 +91,20 @@ public class TexturePackerFileProcessor extends FileProcessor {
 			}
 			if (settings == null) settings = new Settings(defaultSettings);
 			// Merge settings from current directory.
-			try {
-				json.readFields(settings, new JsonReader().parse(new FileReader(settingsFile)));
-			} catch (SerializationException ex) {
-				throw new GdxRuntimeException("Error reading settings file: " + settingsFile, ex);
-			}
+			merge(settings, settingsFile);
 			dirToSettings.put(settingsFile.getParentFile(), settings);
 		}
 
 		// Do actual processing.
 		return super.process(inputFile, outputRoot);
+	}
+
+	private void merge (Settings settings, File settingsFile) {
+		try {
+			json.readFields(settings, new JsonReader().parse(new FileReader(settingsFile)));
+		} catch (Exception ex) {
+			throw new GdxRuntimeException("Error reading settings file: " + settingsFile, ex);
+		}
 	}
 
 	public ArrayList<Entry> process (File[] files, File outputRoot) throws Exception {
@@ -111,13 +117,34 @@ public class TexturePackerFileProcessor extends FileProcessor {
 			};
 			deleteProcessor.setRecursive(false);
 
-			String prefix = packFileName;
-			int dotIndex = prefix.lastIndexOf('.');
-			if (dotIndex != -1) prefix = prefix.substring(0, dotIndex);
-			deleteProcessor.addInputRegex(Pattern.quote(prefix) + "([\\d\\.]*)?-\\d*\\.(png|jpg)");
-			deleteProcessor.addInputRegex(Pattern.quote(prefix) + "([\\d\\.]*)?\\.(atlas)");
+			// Load root settings to get scale.
+			File settingsFile = new File(root, "pack.json");
+			Settings rootSettings = defaultSettings;
+			if (settingsFile.exists()) {
+				rootSettings = new Settings(rootSettings);
+				merge(rootSettings, settingsFile);
+			}
 
-			deleteProcessor.process(outputRoot, null);
+			ObjectSet<String> dirs = new ObjectSet();
+			for (int i = 0, n = rootSettings.scale.length; i < n; i++) {
+				String scaledPackFileName = rootSettings.scaledPackFileName(packFileName, i);
+
+				String prefix = scaledPackFileName;
+				int dotIndex = prefix.lastIndexOf('.');
+				if (dotIndex != -1) prefix = prefix.substring(0, dotIndex);
+				deleteProcessor.addInputRegex("(?i)" + prefix + "\\d*\\.(png|jpg)");
+				deleteProcessor.addInputRegex("(?i)" + prefix + "\\.atlas");
+
+				System.out.println();
+				String dir = new File(scaledPackFileName).getParent();
+				if (dir == null)
+					dirs.add("");
+				else if (new File(dir).exists()) //
+					dirs.add(dir);
+			}
+
+			for (String dir : dirs)
+				deleteProcessor.process(outputRoot + "/" + dir, null);
 		}
 		return super.process(files, outputRoot);
 	}

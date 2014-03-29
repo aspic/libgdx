@@ -23,6 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.UUID;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -44,8 +45,8 @@ public class SharedLibraryLoader {
 	static public String abi = (System.getProperty("sun.arch.abi") != null ? System.getProperty("sun.arch.abi") : "");
 
 	static {
-		String vm = System.getProperty("java.vm.name");
-		if (vm != null && vm.contains("Dalvik")) {
+		String vm = System.getProperty("java.runtime.name");
+		if (vm != null && vm.contains("Android Runtime")) {
 			isAndroid = true;
 			isWindows = false;
 			isLinux = false;
@@ -185,16 +186,25 @@ public class SharedLibraryLoader {
 
 	/** Returns true if the parent directories of the file can be created and the file can be written. */
 	private boolean canWrite (File file) {
-		if (file.canWrite()) return true; // File exists and is writable.
 		File parent = file.getParentFile();
-		parent.mkdirs();
-		if (!parent.isDirectory()) return false;
+		File testFile;
+		if (file.exists()) {
+			if (!file.canWrite() || !file.canExecute()) return false;
+			// Don't overwrite existing file just to check if we can write to directory.
+			testFile = new File(parent, UUID.randomUUID().toString());
+		} else {
+			parent.mkdirs();
+			if (!parent.isDirectory()) return false;
+			testFile = file;
+		}
 		try {
-			new FileOutputStream(file).close();
-			file.delete();
+			new FileOutputStream(testFile).close();
+			if (!testFile.canExecute()) return false;
 			return true;
 		} catch (Throwable ex) {
 			return false;
+		} finally {
+			testFile.delete();
 		}
 	}
 

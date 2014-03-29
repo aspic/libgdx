@@ -108,11 +108,9 @@ public class Button extends Table implements Disableable {
 		if (this.isChecked == isChecked) return;
 		if (buttonGroup != null && !buttonGroup.canCheck(this, isChecked)) return;
 		this.isChecked = isChecked;
-		if (!isDisabled) {
-			ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
-			if (fire(changeEvent)) this.isChecked = !isChecked;
-			Pools.free(changeEvent);
-		}
+		ChangeEvent changeEvent = Pools.obtain(ChangeEvent.class);
+		if (fire(changeEvent)) this.isChecked = !isChecked;
+		Pools.free(changeEvent);
 	}
 
 	/** Toggles the checked state. This method changes the checked state, which fires a {@link ChangeEvent}, so can be used to
@@ -126,7 +124,7 @@ public class Button extends Table implements Disableable {
 	}
 
 	public boolean isPressed () {
-		return clickListener.isPressed();
+		return clickListener.isVisualPressed();
 	}
 
 	public boolean isOver () {
@@ -191,22 +189,14 @@ public class Button extends Table implements Disableable {
 			offsetX = style.unpressedOffsetX;
 			offsetY = style.unpressedOffsetY;
 		}
-
-		if (background != null) {
-			Color color = getColor();
-			batch.setColor(color.r, color.g, color.b, color.a * parentAlpha);
-			background.draw(batch, getX(), getY(), getWidth(), getHeight());
-		}
+		setBackground(background, false);
 
 		Array<Actor> children = getChildren();
 		for (int i = 0; i < children.size; i++)
-			children.get(i).translate(offsetX, offsetY);
+			children.get(i).moveBy(offsetX, offsetY);
 		super.draw(batch, parentAlpha);
 		for (int i = 0; i < children.size; i++)
-			children.get(i).translate(-offsetX, -offsetY);
-	}
-
-	protected void drawBackground (Batch batch, float parentAlpha) {
+			children.get(i).moveBy(-offsetX, -offsetY);
 	}
 
 	public float getPrefWidth () {

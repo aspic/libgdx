@@ -19,16 +19,13 @@ package com.badlogic.gdx.graphics.glutils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL10;
-import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer;
-import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer10;
-import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import com.badlogic.gdx.utils.Disposable;
 
 /** Renders points, lines, rectangles, filled rectangles and boxes.</p>
  * 
@@ -83,11 +80,11 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
  * @author mzechner
  * @author stbachmann
  * @author Nathan Sweet */
-public class ShapeRenderer {
+public class ShapeRenderer implements Disposable {
 	/** Shape types to be used with {@link #begin(ShapeType)}.
 	 * @author mzechner, stbachmann */
 	public enum ShapeType {
-		Point(GL10.GL_POINTS), Line(GL10.GL_LINES), Filled(GL10.GL_TRIANGLES);
+		Point(GL20.GL_POINTS), Line(GL20.GL_LINES), Filled(GL20.GL_TRIANGLES);
 
 		private final int glType;
 
@@ -114,10 +111,7 @@ public class ShapeRenderer {
 	}
 
 	public ShapeRenderer (int maxVertices) {
-		if (Gdx.graphics.isGL20Available())
-			renderer = new ImmediateModeRenderer20(maxVertices, false, true, 0);
-		else
-			renderer = new ImmediateModeRenderer10(maxVertices);
+		renderer = new ImmediateModeRenderer20(maxVertices, false, true, 0);
 		projView.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		matrixDirty = true;
 	}
@@ -207,7 +201,7 @@ public class ShapeRenderer {
 		if (currType != ShapeType.Point) throw new GdxRuntimeException("Must call begin(ShapeType.Point)");
 		checkDirty();
 		checkFlush(1);
-		renderer.color(color.r, color.g, color.b, color.a);
+		renderer.color(color);
 		renderer.vertex(x, y, z);
 	}
 
@@ -289,7 +283,7 @@ public class ShapeRenderer {
 		float dddfy = tmp2y * pre5;
 
 		while (segments-- > 0) {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(fx, fy, 0);
 			fx += dfx;
 			fy += dfy;
@@ -297,12 +291,12 @@ public class ShapeRenderer {
 			dfy += ddfy;
 			ddfx += dddfx;
 			ddfy += dddfy;
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(fx, fy, 0);
 		}
-		renderer.color(color.r, color.g, color.b, color.a);
+		renderer.color(color);
 		renderer.vertex(fx, fy, 0);
-		renderer.color(color.r, color.g, color.b, color.a);
+		renderer.color(color);
 		renderer.vertex(x2, y2, 0);
 	}
 
@@ -320,26 +314,26 @@ public class ShapeRenderer {
 		checkDirty();
 		checkFlush(6);
 		if (currType == ShapeType.Line) {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1, y1, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2, y2, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2, y2, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x3, y3, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x3, y3, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1, y1, 0);
 		} else {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1, y1, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2, y2, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x3, y3, 0);
 		}
 	}
@@ -395,38 +389,38 @@ public class ShapeRenderer {
 		checkFlush(8);
 
 		if (currType == ShapeType.Line) {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, 0);
 		} else {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, 0);
 		}
 	}
@@ -542,18 +536,18 @@ public class ShapeRenderer {
 			renderer.color(col1.r, col1.g, col1.b, col1.a);
 			renderer.vertex(x1, y1, 0);
 		} else {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1, y1, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2, y2, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x3, y3, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x3, y3, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x4, y4, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1, y1, 0);
 		}
 
@@ -577,38 +571,38 @@ public class ShapeRenderer {
 		float tx = t.x * width;
 		float ty = t.y * width;
 		if (currType == ShapeType.Line) {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1 + tx, y1 + ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1 - tx, y1 - ty, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2 + tx, y2 + ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2 - tx, y2 - ty, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2 + tx, y2 + ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1 + tx, y1 + ty, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2 - tx, y2 - ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1 - tx, y1 - ty, 0);
 		} else {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1 + tx, y1 + ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1 - tx, y1 - ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2 + tx, y2 + ty, 0);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2 - tx, y2 - ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2 + tx, y2 + ty, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1 - tx, y1 - ty, 0);
 		}
 	}
@@ -625,155 +619,155 @@ public class ShapeRenderer {
 
 		if (currType == ShapeType.Line) {
 			checkFlush(24);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z + depth);
 		} else {
 			checkFlush(36);
 			// Front
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
 
 			// Back
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
 
 			// Left
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z + depth);
 
 			// Right
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z);
 
 			// Top
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y + height, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y + height, z + depth);
 
 			// Bottom
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + depth);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + width, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
 		}
 
@@ -802,7 +796,7 @@ public class ShapeRenderer {
 			throw new GdxRuntimeException("Must call begin(ShapeType.Filled) or begin(ShapeType.Line)");
 		checkDirty();
 
-		float theta = (2 * 3.1415926f * (angle / 360.0f)) / segments;
+		float theta = (2 * MathUtils.PI * (angle / 360.0f)) / segments;
 		float cos = MathUtils.cos(theta);
 		float sin = MathUtils.sin(theta);
 		float cx = radius * MathUtils.cos(start * MathUtils.degreesToRadians);
@@ -811,44 +805,44 @@ public class ShapeRenderer {
 		if (currType == ShapeType.Line) {
 			checkFlush(segments * 2 + 2);
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, 0);
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 				float temp = cx;
 				cx = cos * cx - sin * cy;
 				cy = sin * temp + cos * cy;
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 			}
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, 0);
 		} else {
 			checkFlush(segments * 3 + 3);
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x, y, 0);
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 				float temp = cx;
 				cx = cos * cx - sin * cy;
 				cy = sin * temp + cos * cy;
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 			}
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, 0);
 		}
 
 		float temp = cx;
 		cx = 0;
 		cy = 0;
-		renderer.color(color.r, color.g, color.b, color.a);
+		renderer.color(color);
 		renderer.vertex(x + cx, y + cy, 0);
 	}
 
@@ -863,49 +857,49 @@ public class ShapeRenderer {
 			throw new GdxRuntimeException("Must call begin(ShapeType.Filled) or begin(ShapeType.Line)");
 		checkDirty();
 
-		float angle = 2 * 3.1415926f / segments;
+		float angle = 2 * MathUtils.PI / segments;
 		float cos = MathUtils.cos(angle);
 		float sin = MathUtils.sin(angle);
 		float cx = radius, cy = 0;
 		if (currType == ShapeType.Line) {
 			checkFlush(segments * 2 + 2);
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 				float temp = cx;
 				cx = cos * cx - sin * cy;
 				cy = sin * temp + cos * cy;
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 			}
 			// Ensure the last segment is identical to the first.
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, 0);
 		} else {
 			checkFlush(segments * 3 + 3);
 			segments--;
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x, y, 0);
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 				float temp = cx;
 				cx = cos * cx - sin * cy;
 				cy = sin * temp + cos * cy;
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, 0);
 			}
 			// Ensure the last segment is identical to the first.
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, 0);
 		}
 
 		float temp = cx;
 		cx = radius;
 		cy = 0;
-		renderer.color(color.r, color.g, color.b, color.a);
+		renderer.color(color);
 		renderer.vertex(x + cx, y + cy, 0);
 	}
 
@@ -921,27 +915,27 @@ public class ShapeRenderer {
 		checkDirty();
 		checkFlush(segments * 3);
 
-		float angle = 2 * 3.1415926f / segments;
+		float angle = 2 * MathUtils.PI / segments;
 
 		float cx = x + width / 2, cy = y + height / 2;
 		if (currType == ShapeType.Line) {
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(cx + (width * 0.5f * MathUtils.cos(i * angle)), cy + (height * 0.5f * MathUtils.sin(i * angle)), 0);
 
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(cx + (width * 0.5f * MathUtils.cos((i + 1) * angle)),
 					cy + (height * 0.5f * MathUtils.sin((i + 1) * angle)), 0);
 			}
 		} else {
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(cx + (width * 0.5f * MathUtils.cos(i * angle)), cy + (height * 0.5f * MathUtils.sin(i * angle)), 0);
 
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(cx, cy, 0);
 
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(cx + (width * 0.5f * MathUtils.cos((i + 1) * angle)),
 					cy + (height * 0.5f * MathUtils.sin((i + 1) * angle)), 0);
 			}
@@ -960,66 +954,66 @@ public class ShapeRenderer {
 			throw new GdxRuntimeException("Must call begin(ShapeType.Filled) or begin(ShapeType.Line)");
 		checkDirty();
 		checkFlush(segments * 4 + 2);
-		float angle = 2 * 3.1415926f / segments;
+		float angle = 2 * MathUtils.PI / segments;
 		float cos = MathUtils.cos(angle);
 		float sin = MathUtils.sin(angle);
 		float cx = radius, cy = 0;
 		if (currType == ShapeType.Line) {
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, z);
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x, y, z + height);
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, z);
 				float temp = cx;
 				cx = cos * cx - sin * cy;
 				cy = sin * temp + cos * cy;
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, z);
 			}
 			// Ensure the last segment is identical to the first.
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, z);
 		} else {
 			segments--;
 			for (int i = 0; i < segments; i++) {
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x, y, z);
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, z);
 				float temp = cx;
 				float temp2 = cy;
 				cx = cos * cx - sin * cy;
 				cy = sin * temp + cos * cy;
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, z);
 
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + temp, y + temp2, z);
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x + cx, y + cy, z);
-				renderer.color(color.r, color.g, color.b, color.a);
+				renderer.color(color);
 				renderer.vertex(x, y, z + height);
 			}
 			// Ensure the last segment is identical to the first.
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, z);
 		}
 		float temp = cx;
 		float temp2 = cy;
 		cx = radius;
 		cy = 0;
-		renderer.color(color.r, color.g, color.b, color.a);
+		renderer.color(color);
 		renderer.vertex(x + cx, y + cy, z);
 		if (currType != ShapeType.Line) {
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + temp, y + temp2, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x + cx, y + cy, z);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x, y, z + height);
 		}
 	}
@@ -1058,9 +1052,9 @@ public class ShapeRenderer {
 				y2 = vertices[i + 3];
 			}
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1, y1, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2, y2, 0);
 		}
 	}
@@ -1091,9 +1085,9 @@ public class ShapeRenderer {
 			x2 = vertices[i + 2];
 			y2 = vertices[i + 3];
 
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x1, y1, 0);
-			renderer.color(color.r, color.g, color.b, color.a);
+			renderer.color(color);
 			renderer.vertex(x2, y2, 0);
 		}
 	}

@@ -94,7 +94,7 @@ public class CharArray {
 
 	public void addAll (char[] array, int offset, int length) {
 		char[] items = this.items;
-		int sizeNeeded = size + length ;
+		int sizeNeeded = size + length;
 		if (sizeNeeded > items.length) items = resize(Math.max(8, (int)(sizeNeeded * 1.75f)));
 		System.arraycopy(array, offset, items, size, length);
 		size += length;
@@ -109,12 +109,12 @@ public class CharArray {
 		if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
 		items[index] = value;
 	}
-	
+
 	public void incr (int index, char value) {
 		if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
 		items[index] += value;
 	}
-	
+
 	public void mul (int index, char value) {
 		if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
 		items[index] *= value;
@@ -227,13 +227,14 @@ public class CharArray {
 	}
 
 	/** Reduces the size of the backing array to the size of the actual items. This is useful to release memory when many items have
-	 * been removed, or if it is known that more items will not be added. */
-	public void shrink () {
-		if (items.length == size) return;
-		resize(size);
+	 * been removed, or if it is known that more items will not be added. 
+	 * @return {@link #items} */
+	public char[] shrink () {
+		if (items.length != size) resize(size);
+		return items;
 	}
 
-	/** Increases the size of the backing array to acommodate the specified number of additional items. Useful before adding many
+	/** Increases the size of the backing array to accommodate the specified number of additional items. Useful before adding many
 	 * items to avoid multiple backing array resizes.
 	 * @return {@link #items} */
 	public char[] ensureCapacity (int additionalCapacity) {
@@ -327,5 +328,10 @@ public class CharArray {
 			buffer.append(items[i]);
 		}
 		return buffer.toString();
+	}
+
+	/** @see #CharArray(char[]) */
+	static public CharArray with (char... array) {
+		return new CharArray(array);
 	}
 }
