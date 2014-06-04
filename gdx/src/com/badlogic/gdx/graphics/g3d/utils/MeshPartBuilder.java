@@ -18,6 +18,7 @@ package com.badlogic.gdx.graphics.g3d.utils;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
@@ -39,6 +40,9 @@ public interface MeshPartBuilder {
 
 	/** Set range of texture coordinates used (default is 0,0,1,1). */
 	public void setUVRange (float u1, float v1, float u2, float v2);
+
+	/** Set range of texture coordinates from the specified TextureRegion. */
+	public void setUVRange (TextureRegion r);
 
 	/** Add one or more vertices, returns the index of the last vertex added. The length of values must a power of the vertex size. */
 	public short vertex (final float... values);

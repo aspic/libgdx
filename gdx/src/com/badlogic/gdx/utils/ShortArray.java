@@ -128,7 +128,7 @@ public class ShortArray {
 	}
 
 	public void insert (int index, short value) {
-		if (index >= size) throw new IndexOutOfBoundsException("index can't be >= size: " + index + " >= " + size);
+		if (index > size) throw new IndexOutOfBoundsException("index can't be > size: " + index + " > " + size);
 		short[] items = this.items;
 		if (size == items.length) items = resize(Math.max(8, (int)(size * 1.75f)));
 		if (ordered)
@@ -192,6 +192,22 @@ public class ShortArray {
 		else
 			items[index] = items[size];
 		return value;
+	}
+
+	/** Removes the items at the specified indices, inclusive. */
+	public void removeRange (int start, int end) {
+		if (end >= size) throw new IndexOutOfBoundsException("end can't be >= size: " + end + " >= " + size);
+		if (start > end) throw new IndexOutOfBoundsException("start can't be > end: " + start + " > " + end);
+		short[] items = this.items;
+		int count = end - start + 1;
+		if (ordered)
+			System.arraycopy(items, start + count, items, start, size - (start + count));
+		else {
+			int lastIndex = this.size - 1;
+			for (int i = 0; i < count; i++)
+				items[start + i] = items[lastIndex - i];
+		}
+		size -= count;
 	}
 
 	/** Removes from this array all of elements contained in the specified array.

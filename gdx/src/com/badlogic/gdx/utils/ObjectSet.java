@@ -326,6 +326,7 @@ public class ObjectSet<T> implements Iterable<T> {
 	}
 
 	public void clear () {
+		if (size == 0) return;
 		T[] keyTable = this.keyTable;
 		for (int i = capacity + stashSize; i-- > 0;)
 			keyTable[i] = null;
@@ -509,6 +510,13 @@ public class ObjectSet<T> implements Iterable<T> {
 
 		public Iterator<K> iterator () {
 			return this;
+		}
+
+		/** Adds the remaining keys to the array. */
+		public Array<K> toArray (Array<K> array) {
+			while (hasNext)
+				array.add(next());
+			return array;
 		}
 
 		/** Returns a new array containing the remaining keys. */

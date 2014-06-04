@@ -193,7 +193,7 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 				input.setText(text);
 				input.setSingleLine();
 				alert.setView(input);
-				alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				alert.setPositiveButton(context.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
 					public void onClick (DialogInterface dialog, int whichButton) {
 						Gdx.app.postRunnable(new Runnable() {
 							@Override
@@ -203,7 +203,7 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 						});
 					}
 				});
-				alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				alert.setNegativeButton(context.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
 					public void onClick (DialogInterface dialog, int whichButton) {
 						Gdx.app.postRunnable(new Runnable() {
 							@Override
@@ -238,7 +238,7 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 				input.setHint(placeholder);
 				input.setSingleLine();
 				alert.setView(input);
-				alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+				alert.setPositiveButton(context.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
 					public void onClick (DialogInterface dialog, int whichButton) {
 						Gdx.app.postRunnable(new Runnable() {
 							@Override
@@ -457,6 +457,7 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 				String chars = e.getCharacters();
 				for (int i = 0; i < chars.length(); i++) {
 					event = usedKeyEvents.obtain();
+					event.timeStamp = System.nanoTime();
 					event.keyCode = 0;
 					event.keyChar = chars.charAt(i);
 					event.type = KeyEvent.KEY_TYPED;
@@ -472,6 +473,7 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 			switch (e.getAction()) {
 			case android.view.KeyEvent.ACTION_DOWN:
 				event = usedKeyEvents.obtain();
+				event.timeStamp = System.nanoTime();
 				event.keyChar = 0;
 				event.keyCode = e.getKeyCode();
 				event.type = KeyEvent.KEY_DOWN;
@@ -486,7 +488,9 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 				keys.put(event.keyCode, null);
 				break;
 			case android.view.KeyEvent.ACTION_UP:
+				long timeStamp = System.nanoTime();
 				event = usedKeyEvents.obtain();
+				event.timeStamp = timeStamp;
 				event.keyChar = 0;
 				event.keyCode = e.getKeyCode();
 				event.type = KeyEvent.KEY_UP;
@@ -498,6 +502,7 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 				keyEvents.add(event);
 
 				event = usedKeyEvents.obtain();
+				event.timeStamp = timeStamp;
 				event.keyChar = character;
 				event.keyCode = 0;
 				event.type = KeyEvent.KEY_TYPED;
@@ -693,17 +698,17 @@ public class AndroidInput implements Input, OnKeyListener, OnTouchListener {
 		deltaX = resize(deltaX);
 		deltaY = resize(deltaY);
 		touched = resize(touched);
-		
+
 		return len;
 	}
-	
-	private int[] resize(int[] orig) {
+
+	private int[] resize (int[] orig) {
 		int[] tmp = new int[orig.length + 2];
 		System.arraycopy(orig, 0, tmp, 0, orig.length);
 		return tmp;
 	}
-	
-	private boolean[] resize(boolean[] orig) {
+
+	private boolean[] resize (boolean[] orig) {
 		boolean[] tmp = new boolean[orig.length + 2];
 		System.arraycopy(orig, 0, tmp, 0, orig.length);
 		return tmp;

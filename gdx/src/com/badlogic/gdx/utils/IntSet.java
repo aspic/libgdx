@@ -345,6 +345,7 @@ public class IntSet {
 	}
 
 	public void clear () {
+		if (size == 0) return;
 		int[] keyTable = this.keyTable;
 		for (int i = capacity + stashSize; i-- > 0;)
 			keyTable[i] = EMPTY;
@@ -472,15 +473,6 @@ public class IntSet {
 		IntSet set = new IntSet();
 		set.addAll(array);
 		return set;
-	}
-
-	static public class Entry<V> {
-		public int key;
-		public V value;
-
-		public String toString () {
-			return key + "=" + value;
-		}
 	}
 
 	static public class IntSetIterator {

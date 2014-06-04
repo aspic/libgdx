@@ -156,8 +156,8 @@ public class SelectBox<T> extends Widget implements Disableable {
 		prefWidth = Math.max(
 			prefWidth,
 			maxItemWidth
-				+ scrollStyle.background.getLeftWidth()
-				+ scrollStyle.background.getRightWidth()
+				+ (scrollStyle.background == null ? 0 : scrollStyle.background.getLeftWidth()
+					+ scrollStyle.background.getRightWidth())
 				+ listStyle.selection.getLeftWidth()
 				+ listStyle.selection.getRightWidth()
 				+ Math.max(style.scrollStyle.vScroll != null ? style.scrollStyle.vScroll.getMinWidth() : 0,
@@ -344,6 +344,7 @@ public class SelectBox<T> extends Widget implements Disableable {
 			setWidth(SelectBox.this.getWidth());
 			setHeight(height);
 
+			validate();
 			scrollToCenter(0, list.getHeight() - getSelectedIndex() * itemHeight - itemHeight / 2, 0, 0);
 			updateVisualScroll();
 

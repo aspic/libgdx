@@ -18,6 +18,8 @@ package com.badlogic.gdx.math;
 
 import java.io.Serializable;
 
+import com.badlogic.gdx.utils.NumberUtils;
+
 /** A simple quaternion class.
  * @see <a href="http://en.wikipedia.org/wiki/Quaternion">http://en.wikipedia.org/wiki/Quaternion</a>
  * @author badlogicgames@gmail.com
@@ -311,7 +313,25 @@ public class Quaternion implements Serializable {
 		this.w = newW;
 		return this;
 	}
-
+	
+	/** Add the x,y,z,w components of the passed in quaternion to the ones of this quaternion */
+	public Quaternion add(Quaternion quaternion){
+		this.x += quaternion.x;
+		this.y += quaternion.y;
+		this.z += quaternion.z;
+		this.w += quaternion.w;
+		return this;
+	}
+	
+	/** Add the x,y,z,w components of the passed in quaternion to the ones of this quaternion */
+	public Quaternion add(float qx, float qy, float qz, float qw){
+		this.x += qx;
+		this.y += qy;
+		this.z += qz;
+		this.w += qw;
+		return this;
+	}
+	
 	// TODO : the matrix4 set(quaternion) doesnt set the last row+col of the matrix to 0,0,0,1 so... that's why there is this
 // method
 	/** Fills a 4x4 matrix with the rotation matrix represented by this quaternion.
@@ -590,17 +610,101 @@ public class Quaternion implements Serializable {
 		return this;
 	}
 
+	/**
+	 * Spherical linearly interpolates multiple quaternions and stores the result in this Quaternion.
+	 * Will not destroy the data previously inside the elements of q.
+	 * result = (q_1^w_1)*(q_2^w_2)* ... *(q_n^w_n) where w_i=1/n.
+	 * @param q List of quaternions
+	 * @return This quaternion for chaining */
+	public Quaternion slerp (Quaternion[] q) {
+		
+		//Calculate exponents and multiply everything from left to right
+		final float w = 1.0f/q.length;
+		set(q[0]).exp(w);
+		for(int i=1;i<q.length;i++)
+			mul(tmp1.set(q[i]).exp(w));
+		nor();
+		return this;
+	}
+	
+	/**
+	 * Spherical linearly interpolates multiple quaternions by the given weights and stores the result in this Quaternion.
+	 * Will not destroy the data previously inside the elements of q or w.
+	 * result = (q_1^w_1)*(q_2^w_2)* ... *(q_n^w_n) where the sum of w_i is 1.
+	 * Lists must be equal in length.
+	 * @param q List of quaternions
+	 * @param w List of weights
+	 * @return This quaternion for chaining */
+	public Quaternion slerp (Quaternion[] q, float[] w) {
+		
+		//Calculate exponents and multiply everything from left to right
+		set(q[0]).exp(w[0]);
+		for(int i=1;i<q.length;i++)
+			mul(tmp1.set(q[i]).exp(w[i]));
+		nor();
+		return this;
+	}
+	
+	/**
+	 * Calculates (this quaternion)^alpha where alpha is a real number and stores the result in this quaternion.
+	 * See http://en.wikipedia.org/wiki/Quaternion#Exponential.2C_logarithm.2C_and_power
+	 * @param alpha Exponent
+	 * @return This quaternion for chaining */
+	public Quaternion exp (float alpha) {
+
+		//Calculate |q|^alpha
+		float norm = len();
+		float normExp = (float)Math.pow(norm, alpha);
+
+		//Calculate theta
+		float theta = (float)Math.acos(w / norm);
+
+		//Calculate coefficient of basis elements
+		float coeff = 0;
+		if(Math.abs(theta) < 0.001) //If theta is small enough, use the limit of sin(alpha*theta) / sin(theta) instead of actual value
+			coeff = normExp*alpha / norm;
+		else
+			coeff = (float)(normExp*Math.sin(alpha*theta) / (norm*Math.sin(theta)));
+
+		//Write results
+		w = (float)(normExp*Math.cos(alpha*theta));
+		x *= coeff;
+		y *= coeff;
+		z *= coeff;
+
+		//Fix any possible discrepancies
+		nor();
+
+		return this;
+	}
+	
 	@Override
-	public boolean equals (final Object o) {
-		if (this == o) {
+	public int hashCode () {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + NumberUtils.floatToRawIntBits(w);
+		result = prime * result + NumberUtils.floatToRawIntBits(x);
+		result = prime * result + NumberUtils.floatToRawIntBits(y);
+		result = prime * result + NumberUtils.floatToRawIntBits(z);
+		return result;
+	}
+
+	@Override
+	public boolean equals (Object obj) {
+		if (this == obj) {
 			return true;
 		}
-		if (!(o instanceof Quaternion)) {
+		if (obj == null) {
 			return false;
 		}
-		final Quaternion comp = (Quaternion)o;
-		return this.x == comp.x && this.y == comp.y && this.z == comp.z && this.w == comp.w;
-
+		if (!(obj instanceof Quaternion)) {
+			return false;
+		}
+		Quaternion other = (Quaternion)obj;
+		return (NumberUtils.floatToRawIntBits(w) == NumberUtils.floatToRawIntBits(other.w))
+			&& (NumberUtils.floatToRawIntBits(x) == NumberUtils.floatToRawIntBits(other.x))
+			&& (NumberUtils.floatToRawIntBits(y) == NumberUtils.floatToRawIntBits(other.y))
+			&& (NumberUtils.floatToRawIntBits(z) == NumberUtils.floatToRawIntBits(other.z));
 	}
 
 	/** Get the dot product between the two quaternions (commutative).
@@ -744,7 +848,7 @@ public class Quaternion implements Serializable {
 	public float getAngleAroundRad (final float axisX, final float axisY, final float axisZ) {
 		final float d = Vector3.dot(this.x, this.y, this.z, axisX, axisY, axisZ);
 		final float l2 = Quaternion.len2(axisX * d, axisY * d, axisZ * d, this.w);
-		return l2 == 0f ? 0f : (float)(2.0 * Math.acos(this.w / Math.sqrt(l2)));
+		return MathUtils.isZero(l2) ? 0f : (float)(2.0 * Math.acos(this.w / Math.sqrt(l2)));
 	}
 
 	/** Get the angle in radians of the rotation around the specified axis. The axis must be normalized.
