@@ -77,24 +77,20 @@ public class GridPoint3 {
 	}
 
 	@Override
-	public int hashCode () {
-		final int prime = 37;
-		int result = 1;
-		result = prime * result + NumberUtils.floatToIntBits(x);
-		result = prime * result + NumberUtils.floatToIntBits(y);
-		result = prime * result + NumberUtils.floatToIntBits(z);
-		return result;
+	public boolean equals (Object o) {
+		if (this == o) return true;
+		if (o == null || o.getClass() != this.getClass()) return false;
+		GridPoint3 g = (GridPoint3)o;
+		return this.x == g.x && this.y == g.y && this.z == g.z;
 	}
 
 	@Override
-	public boolean equals (Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		GridPoint3 other = (GridPoint3)obj;
-		if (NumberUtils.floatToIntBits(x) != NumberUtils.floatToIntBits(other.x)) return false;
-		if (NumberUtils.floatToIntBits(y) != NumberUtils.floatToIntBits(other.y)) return false;
-		if (NumberUtils.floatToIntBits(z) != NumberUtils.floatToIntBits(other.z)) return false;
-		return true;
+	public int hashCode () {
+		final int prime = 17;
+		int result = 1;
+		result = prime * result + this.x;
+		result = prime * result + this.y;
+		result = prime * result + this.z;
+		return result;
 	}
 }

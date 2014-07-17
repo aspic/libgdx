@@ -70,22 +70,19 @@ public class GridPoint2 {
 	}
 
 	@Override
-	public int hashCode () {
-		final int prime = 37;
-		int result = 1;
-		result = prime * result + NumberUtils.floatToIntBits(x);
-		result = prime * result + NumberUtils.floatToIntBits(y);
-		return result;
+	public boolean equals (Object o) {
+		if (this == o) return true;
+		if (o == null || o.getClass() != this.getClass()) return false;
+		GridPoint2 g = (GridPoint2)o;
+		return this.x == g.x && this.y == g.y;
 	}
 
 	@Override
-	public boolean equals (Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		GridPoint2 other = (GridPoint2)obj;
-		if (NumberUtils.floatToIntBits(x) != NumberUtils.floatToIntBits(other.x)) return false;
-		if (NumberUtils.floatToIntBits(y) != NumberUtils.floatToIntBits(other.y)) return false;
-		return true;
+	public int hashCode () {
+		final int prime = 53;
+		int result = 1;
+		result = prime * result + this.x;
+		result = prime * result + this.y;
+		return result;
 	}
 }
